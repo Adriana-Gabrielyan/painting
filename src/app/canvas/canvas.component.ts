@@ -96,7 +96,7 @@ export class CanvasComponent implements OnInit {
     }
 
     for (let i = 0; i < this.projectList.length; i++) {
-      if (this.projectList[i].name === this.projectName) {
+      if (this.projectList[i].name.toLowerCase() === this.projectName.toLowerCase() ) {
         this.inputError.hasUniqueError = true;
         this.inputError.hasValueError = false;
         break;

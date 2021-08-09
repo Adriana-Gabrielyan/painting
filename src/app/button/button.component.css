@@ -1,0 +1,12 @@
+[class*="button"] {
+    display: inline-block;
+    padding: 13px 20px;
+    border-radius: 30px;
+    border: 0;
+    outline: none;
+    background: #f50198;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    margin-left: 10px;
+  }

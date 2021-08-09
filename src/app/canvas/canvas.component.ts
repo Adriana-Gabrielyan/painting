@@ -1,13 +1,13 @@
-import {Component, OnInit} from '@angular/core';
-import {ICircle} from "../interfaces/circle.interface";
-import {ECircleCount} from "../enums/circle-count.enum";
-import {LocalStorageService} from "../services/storage.service";
-import {IProject} from "../interfaces/project.interface";
+import { Component, OnInit } from '@angular/core';
+import { ICircle } from '../interfaces/circle.interface';
+import { ECircleCount } from '../enums/circle-count.enum';
+import { LocalStorageService } from '../services/storage.service';
+import { IProject } from '../interfaces/project.interface';
 
 @Component({
   selector: 'app-canvas',
   templateUrl: './canvas.component.html',
-  styleUrls: ['./canvas.component.css']
+  styleUrls: ['./canvas.component.css'],
 })
 export class CanvasComponent implements OnInit {
   circles: ICircle[] = [];
@@ -20,26 +20,33 @@ export class CanvasComponent implements OnInit {
     ECircleCount.MAX, // 400
   ];
   selectedSize: number = this.canvasSizes[0];
-  currentColor: string = '#000';
+  currentColor: string = '#000000';
+  inputError = {
+    hasValueError: false,
+    hasUniqueError: false,
+  };
+  isEditable = false;
 
-  constructor(private storage: LocalStorageService) { }
+  constructor(private storage: LocalStorageService) {}
 
   ngOnInit(): void {
     this.getProjects();
-    console.log(this.projectList)
   }
 
   onGenerateCircles(): void {
-    this.resetColors()
-    console.log('this.circles: ', this.circles);
+    this.resetColors();
   }
 
   onSizeSelect(): void {
-    // this.circles = [];
+    this.circles = [];
   }
 
   onCircleClick(circle: ICircle): void {
-    this.circles[circle.id].color = this.currentColor;
+    if (circle.color !== this.currentColor) {
+      this.circles[circle.id].color = this.currentColor;
+    } else {
+      this.circles[circle.id].color = '#fff';
+    }
   }
 
   onResetColor(): void {
@@ -50,6 +57,12 @@ export class CanvasComponent implements OnInit {
 
   resetColors(): void {
     this.circles = [];
+    this.currentColor = '#000000';
+    this.isEditable = false;
+    this.inputError.hasUniqueError = false;
+    this.inputError.hasValueError = false;
+    this.isEditable = false;
+    this.projectName = '';
     for (let i = 0; i < this.selectedSize; i++) {
       this.circles.push({
         id: i,
@@ -65,7 +78,7 @@ export class CanvasComponent implements OnInit {
     }
     this.circles.forEach((item) => {
       item.color = this.currentColor;
-    })
+    });
   }
 
   isEmpty(arr: ICircle[]): boolean {
@@ -78,14 +91,45 @@ export class CanvasComponent implements OnInit {
 
   onSave(): void {
     if (this.isEmpty(this.circles) || !this.projectName) {
+      this.inputError.hasValueError = true;
       return;
     }
-    this.projectList.push({
-      id: this.newId(),
-      name: this.projectName,
-      circles: this.circles,
-    })
+
+    for (let i = 0; i < this.projectList.length; i++) {
+      if (this.projectList[i].name === this.projectName) {
+        this.inputError.hasUniqueError = true;
+        this.inputError.hasValueError = false;
+        break;
+      }
+      this.inputError.hasUniqueError = false;
+    }
+
+    if (!this.inputError.hasUniqueError && !this.isEditable) {
+      this.projectList.push({
+        id: this.newId(),
+        name: this.projectName,
+        size: this.selectedSize,
+        circles: this.circles,
+      });
+      this.projectName = '';
+      this.inputError.hasUniqueError = false;
+      this.inputError.hasValueError = false;
+    }
+    if (this.isEditable) {
+      this.resetColors();
+    }
+
     const projectsStr = JSON.stringify(this.projectList);
+    this.storage.set(this.projectListName, projectsStr);
+  }
+
+  onDelete(project: IProject) {
+    const filteredProjects = this.projectList.filter((item) => {
+      return item.id !== project.id;
+    });
+
+    this.projectList = filteredProjects;
+    const projectsStr = JSON.stringify(filteredProjects);
     this.storage.set(this.projectListName, projectsStr);
   }
 
@@ -98,5 +142,8 @@ export class CanvasComponent implements OnInit {
 
   selectProject(project: IProject): void {
     this.circles = project.circles;
+    this.selectedSize = project.size;
+    this.projectName = project.name;
+    this.isEditable = true;
   }
 }

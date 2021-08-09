@@ -7,9 +7,13 @@
   height: 20px;
   border-radius: 30px;
   background-color: aliceblue;
-  border: 1px solid #000000;
+  border: 1px solid #7d0160;
+  cursor: pointer;
 }
-
+.circle-wrapper:hover {
+  transition: 0.3s;
+  transform: scale(1.25);
+}
 .circle {
   display: flex;
   width: calc(100% - 2px);

@@ -1,7 +1,9 @@
 <div class="canvas-component">
   <div class="canvas-container">
     <div class="controls-panel">
-      <h1 class="title-h1"> Select size and click on generate to start painting</h1>
+      <h1 class="title-h1">
+        Select size and click on generate to start painting
+      </h1>
       <select
         class="size-selector"
         [(ngModel)]="selectedSize"
@@ -14,16 +16,23 @@
       <app-button text="Generate" (btnClick)="onGenerateCircles()"></app-button>
       <div *ngIf="circles.length > 0" class="color-selection-panel">
         <div class="picker-wrapper">
-          <div class="picker-inner" [style.background-color]="currentColor"></div>
+          <div
+            class="picker-inner"
+            [style.background-color]="currentColor"
+          ></div>
           <input class="picker" type="color" [(ngModel)]="currentColor" />
         </div>
-  
+
         <app-button text="Fill all" (btnClick)="onFillCircles()"></app-button>
         <app-button text="Reset" (btnClick)="onResetColor()"></app-button>
 
         <div class="save-project">
           <div class="input-container">
-            <input type="text" [(ngModel)]="projectName" placeholder="Project Name">
+            <input
+              type="text"
+              [(ngModel)]="projectName"
+              placeholder="Project Name"
+            />
             <small class="error" *ngIf="inputError.hasValueError">
               Give your project a name
             </small>
@@ -31,32 +40,41 @@
               Name must be unique
             </small>
           </div>
-          <app-button text="{{isEditable ? 'Edit' : 'Save'}} "class="button-save" (btnClick)="onSave()"></app-button>
+          <app-button
+            text="{{ isEditable ? 'Edit' : 'Save' }} "
+            class="button-save"
+            (btnClick)="onSave()"
+          ></app-button>
         </div>
       </div>
-     
     </div>
 
-    <div class="circles-container container-{{ selectedSize }}">
+    <div class="circles-container container-{{selectedSize}}">
       <app-circle
-        *ngFor="let circle of circles"
+        *ngFor="let circle of circles; let index = index"
         [color]="circle.color"
         (click)="onCircleClick(circle)"
+        [ngClass]="{ 'wrap-row': (index + 1) % 11  == 0 }"
       >
       </app-circle>
     </div>
   </div>
 
   <div *ngIf="projectList.length > 0" class="projects-container">
-    <h1 class="title-h1"> Your previous projects</h1>
+    <h1 class="title-h1">Your previous projects</h1>
 
     <div
-      *ngFor="let project of projectList"
+      *ngFor="let project of currentUserProjects"
       class="project"
       (click)="selectProject(project)"
     >
       <p>{{ project.name }}</p>
-      <span class="remove-project" title="Delete project" (click)="onDelete(project)">x</span>
+      <span
+        class="remove-project"
+        title="Delete project"
+        (click)="onDelete(project)"
+        >x</span
+      >
     </div>
   </div>
 </div>

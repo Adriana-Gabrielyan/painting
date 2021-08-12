@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { ICircle } from '../interfaces/circle.interface';
+import { ICircle } from '../models/circle.interface';
 import { ECircleCount } from '../enums/circle-count.enum';
 import { LocalStorageService } from '../services/storage.service';
-import { IProject } from '../interfaces/project.interface';
+import { IProject } from '../models/project.interface';
+import { IUser } from '../models/user.interface';
 
 @Component({
   selector: 'app-canvas',
@@ -14,19 +15,22 @@ export class CanvasComponent implements OnInit {
   projectName: string = '';
   projectList: IProject[] = [];
   projectListName = 'circlesProject';
+  currentUser!: IUser;
   canvasSizes: number[] = [
     ECircleCount.MIN, // 100
     ECircleCount.MID, // 225
     ECircleCount.MAX, // 400
   ];
+  currentUserProjects: IProject[] = [];
+  selectedProject!: IProject;
   selectedSize: number = this.canvasSizes[0];
+  boxSize!: number;
   currentColor: string = '#000000';
   inputError = {
     hasValueError: false,
     hasUniqueError: false,
   };
   isEditable = false;
-
   constructor(private storage: LocalStorageService) {}
 
   ngOnInit(): void {
@@ -39,14 +43,12 @@ export class CanvasComponent implements OnInit {
 
   onSizeSelect(): void {
     this.circles = [];
+    this.selectedProject = {} as IProject;
   }
 
   onCircleClick(circle: ICircle): void {
-    if (circle.color !== this.currentColor) {
-      this.circles[circle.id].color = this.currentColor;
-    } else {
-      this.circles[circle.id].color = '#fff';
-    }
+    this.circles[circle.id].color =
+      circle.color !== this.currentColor ? this.currentColor : '#fff';
   }
 
   onResetColor(): void {
@@ -58,7 +60,6 @@ export class CanvasComponent implements OnInit {
   resetColors(): void {
     this.circles = [];
     this.currentColor = '#000000';
-    this.isEditable = false;
     this.inputError.hasUniqueError = false;
     this.inputError.hasValueError = false;
     this.isEditable = false;
@@ -90,13 +91,21 @@ export class CanvasComponent implements OnInit {
   }
 
   onSave(): void {
+    const currentUser = this.storage.get('currentUser');
+    if (currentUser) {
+      this.currentUser = JSON.parse(currentUser);
+    }
+
     if (this.isEmpty(this.circles) || !this.projectName) {
       this.inputError.hasValueError = true;
       return;
     }
 
     for (let i = 0; i < this.projectList.length; i++) {
-      if (this.projectList[i].name.toLowerCase() === this.projectName.toLowerCase() ) {
+      if (
+        this.projectList[i].name.toLowerCase() ===
+        this.projectName.toLowerCase()
+      ) {
         this.inputError.hasUniqueError = true;
         this.inputError.hasValueError = false;
         break;
@@ -110,6 +119,14 @@ export class CanvasComponent implements OnInit {
         name: this.projectName,
         size: this.selectedSize,
         circles: this.circles,
+        userEmail: this.currentUser.email,
+      });
+      this.currentUserProjects.push({
+        id: this.newId(),
+        name: this.projectName,
+        size: this.selectedSize,
+        circles: this.circles,
+        userEmail: this.currentUser.email,
       });
       this.projectName = '';
       this.inputError.hasUniqueError = false;
@@ -124,6 +141,9 @@ export class CanvasComponent implements OnInit {
   }
 
   onDelete(project: IProject) {
+    if (project === this.selectedProject) {
+      this.selectedProject = {} as IProject;
+    }
     const filteredProjects = this.projectList.filter((item) => {
       return item.id !== project.id;
     });
@@ -138,6 +158,13 @@ export class CanvasComponent implements OnInit {
     if (projects) {
       this.projectList = JSON.parse(projects);
     }
+    const currentUser = this.storage.get('currentUser');
+    if (currentUser) {
+      this.currentUser = JSON.parse(currentUser);
+    }
+    this.currentUserProjects = this.projectList.filter((project) => {
+      return this.currentUser.email === project.userEmail;
+    });
   }
 
   selectProject(project: IProject): void {
@@ -145,5 +172,6 @@ export class CanvasComponent implements OnInit {
     this.selectedSize = project.size;
     this.projectName = project.name;
     this.isEditable = true;
+    this.selectedProject = project;
   }
 }

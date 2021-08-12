@@ -2,6 +2,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
+  justify-content: space-between;
   margin: 0 auto;
   max-width: 1200px;
   padding: 50px 15px;
@@ -17,10 +18,10 @@
 }
 
 .projects-container {
-  flex: 0 0 40%;
+  flex: 0 0 37%;
 }
 .canvas-container {
-  flex: 0 0 60%;
+  flex: 0 0 55%;
 }
 .project {
   display: flex;
@@ -147,3 +148,7 @@
   font-family: cursive;
   color: #e900f2;
 }
+
+/* .wrap-row {
+  flex-basis: 100%;
+} */
